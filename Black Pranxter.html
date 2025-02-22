@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BP Adventures!</title>
+    <style>
+        body {
+            margin: 0;
+            overflow: hidden;
+            background-color: skyblue;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+        canvas {
+            background-color: lightblue;
+        }
+        .pause-message {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            color: white;
+            font-size: 20px;
+            font-family: Arial, sans-serif;
+            background: rgba(0, 0, 0, 0.5);
+            padding: 5px 10px;
+            border-radius: 5px;
+        }
+        #startScreen {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.9); /* Black backdrop with slight transparency */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+            color: white;
+            font-family: 'Arial Black', sans-serif;
+            text-align: center;
+        }
+        #startScreen h1 {
+            font-size: 64px;
+            margin: 0;
+            text-transform: uppercase;
+            letter-spacing: 4px;
+            animation: glow 2s infinite alternate;
+        }
+        #startScreen p {
+            font-size: 24px;
+            margin: 20px 0;
+            animation: fadeInOut 2s infinite;
+        }
+        #catFace {
+            width: 300px; /* Adjust size as needed */
+            height: auto;
+            margin-bottom: 20px;
+        }
+        @keyframes glow {
+            0% {
+                text-shadow: 0 0 10px #fff, 0 0 20px #fff, 0 0 30px #00bfff, 0 0 40px #00bfff, 0 0 50px #00bfff, 0 0 60px #00bfff, 0 0 70px #00bfff;
+            }
+            100% {
+                text-shadow: 0 0 20px #fff, 0 0 30px #00bfff, 0 0 40px #00bfff, 0 0 50px #00bfff, 0 0 60px #00bfff, 0 0 70px #00bfff, 0 0 80px #00bfff;
+            }
+        }
+        @keyframes fadeInOut {
+            0%, 100% {
+                opacity: 0.5;
+            }
+            50% {
+                opacity: 1;
+            }
+        }
+    </style>
+</head>
+<body>
+    <canvas id="gameCanvas"></canvas>
+    <div id="startScreen">
+        <img id="catFace" src="black-cat.png" alt="Black Cat"> <!-- Custom black cat image -->
+        <h1>BLACK PRANXTER ADVENTURES!</h1>
+        <p>Press Space, Arrow Up, or Click to Start</p>
+    </div>
+    <div class="pause-message">Press ESC to Pause</div>
+    <script>
+        const canvas = document.getElementById("gameCanvas");
+        const ctx = canvas.getContext("2d");
+        canvas.width = 1280;
+        canvas.height = 720;
+
+        const catImg = new Image();
+        const fireImg = new Image();
+        const topFireImg = new Image();
+        const splashImg = new Image();
+        const burnImg = new Image();
+        const bgImg = new Image();
+
+        catImg.src = "pngimg.png";
+        fireImg.src = "bottomfire.png";
+        topFireImg.src = "topfire.png";
+        splashImg.src = "splash.png";
+        burnImg.src = "burn.png";
+        bgImg.src = "BPbackground.png";
+
+        const jumpSound = new Audio("https://www.fesliyanstudios.com/play-mp3/4380");
+        const hitSound = new Audio("https://www.fesliyanstudios.com/play-mp3/4381");
+        const splashSound = new Audio("https://www.fesliyanstudios.com/play-mp3/4368");
+
+        let bgX = 0;
+        let cat = { x: 100, y: canvas.height / 2, width: 80, height: 60, gravity: 0.28, velocity: 0, jump: -5.9 };
+        let pipes = [];
+        let frame = 0;
+        let score = 0;
+        let gameOver = false;
+        let splash = null;
+        let burnEffect = null;
+        let paused = false;
+        let gameStarted = false; // Track if the game has started
+
+        function drawBackground() {
+            ctx.drawImage(bgImg, bgX, 0, canvas.width, canvas.height);
+            ctx.drawImage(bgImg, bgX + canvas.width, 0, canvas.width, canvas.height);
+        }
+
+        function updateBackground() {
+            bgX -= 0.9;
+            if (bgX <= -canvas.width) {
+                bgX = 0;
+            }
+        }
+
+        function drawCat() {
+            ctx.drawImage(catImg, cat.x, cat.y, cat.width, cat.height);
+        }
+
+        function drawPipes() {
+            pipes.forEach(pipe => {
+                if (pipe.y === 0) {
+                    ctx.drawImage(topFireImg, pipe.x, pipe.y, pipe.width, pipe.height);
+                } else {
+                    ctx.drawImage(fireImg, pipe.x, pipe.y, pipe.width, pipe.height);
+                }
+            });
+        }
+
+        function drawEffects() {
+            if (splash) {
+                ctx.drawImage(splashImg, splash.x, splash.y, 100, 50);
+            }
+            if (burnEffect) {
+                ctx.drawImage(burnImg, burnEffect.x, burnEffect.y, 100, 100);
+            }
+        }
+
+        function updateGame() {
+            if (gameOver || paused || !gameStarted) return;
+
+            cat.velocity += cat.gravity;
+            cat.y += cat.velocity;
+
+            updateBackground();
+
+            if (frame % 260 === 0) {
+                let gap = 220;
+                let topHeight = Math.random() * 280 + 100;
+                let bottomHeight = canvas.height - topHeight - gap;
+                pipes.push({ x: canvas.width, y: 0, width: 72, height: topHeight });
+                pipes.push({ x: canvas.width, y: canvas.height - bottomHeight, width: 72, height: bottomHeight });
+            }
+
+            pipes.forEach(pipe => {
+                pipe.x -= 2.8;
+                if (pipe.x + pipe.width < 0) {
+                    pipes.shift();
+                    score++;
+                }
+                if (
+                    cat.x < pipe.x + pipe.width &&
+                    cat.x + cat.width > pipe.x &&
+                    cat.y < pipe.y + pipe.height &&
+                    cat.y + cat.height > pipe.y
+                ) {
+                    hitSound.play();
+                    gameOver = true;
+                    burnEffect = { x: cat.x, y: cat.y };
+                }
+            });
+
+            if (cat.y + cat.height > canvas.height - 50) {
+                hitSound.play();
+                splashSound.play();
+                splash = { x: cat.x, y: canvas.height - 70 };
+                gameOver = true;
+            }
+            if (cat.y < 0) {
+                hitSound.play();
+                gameOver = true;
+            }
+
+            frame++;
+        }
+
+        function drawScore() {
+            ctx.fillStyle = "white";
+            ctx.font = "36px Arial";
+            ctx.fillText("Score: " + score, 20, 50);
+        }
+
+        function drawGameOver() {
+            if (gameOver) {
+                ctx.fillStyle = "red";
+                ctx.font = "48px Arial";
+                ctx.fillText("Game Over", canvas.width / 2 - 120, canvas.height / 2);
+                ctx.font = "24px Arial";
+                ctx.fillText("Press Space to Restart", canvas.width / 2 - 130, canvas.height / 2 + 50);
+            }
+        }
+
+        function restartGame() {
+            cat.y = canvas.height / 2;
+            cat.velocity = 0;
+            pipes = [];
+            score = 0;
+            gameOver = false;
+            splash = null;
+            burnEffect = null;
+            frame = 0;
+        }
+
+        function togglePause() {
+            paused = !paused;
+            if (!paused) {
+                gameLoop();
+            }
+        }
+
+        function gameLoop() {
+            if (paused || !gameStarted) return;
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            drawBackground();
+            drawCat();
+            drawPipes();
+            drawEffects();
+            drawScore();
+            drawGameOver();
+            updateGame();
+            requestAnimationFrame(gameLoop);
+        }
+
+        function startGame() {
+            gameStarted = true;
+            document.getElementById("startScreen").style.display = "none";
+            gameLoop();
+        }
+
+        function jump() {
+            if (gameOver) {
+                restartGame();
+            } else if (!paused) {
+                cat.velocity = cat.jump;
+                jumpSound.play();
+            }
+        }
+
+        document.addEventListener("keydown", function (event) {
+            if ((event.code === "Space" || event.code === "ArrowUp") && !gameStarted) {
+                startGame();
+            } else if (event.code === "Space" || event.code === "ArrowUp") {
+                jump();
+            } else if (event.code === "Escape") {
+                togglePause();
+            }
+        });
+
+        canvas.addEventListener("click", function () {
+            if (!gameStarted) {
+                startGame();
+            } else {
+                jump();
+            }
+        });
+
+        // Start the game loop (but it won't run until gameStarted is true)
+        gameLoop();
+    </script>
+</body>
+</html>
