@@ -1,12 +1,128 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <meta charset="utf-8">
-    <title>Redirecting to PRanxter's space...</title>
-    <meta http-equiv="refresh" content="0; URL='https://1drv.ms/f/c/8f428c27fc51325c/EkWLBuhu81xNggjNfYAVU2UB28QKI3JwqVLIb4inxW7c_w?e=xV3UiK'">
-    <link rel="canonical" href="https://1drv.ms/f/c/8f428c27fc51325c/EkWLBuhu81xNggjNfYAVU2UB28QKI3JwqVLIb4inxW7c_w?e=xV3UiK">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Redirecting to PRanxter's Space...</title>
+
+<meta http-equiv="refresh" content="5;url=https://1drv.ms/f/c/8f428c27fc51325c/EkWLBuhu81xNggjNfYAVU2UB28QKI3JwqVLIb4inxW7c_w?e=xV3UiK">
+
+<style>
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    height: 100vh;
+    overflow: hidden;
+    font-family: Segoe UI, sans-serif;
+    background: linear-gradient(135deg,#0f172a,#1e293b,#111827);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    color: white;
+}
+
+.container {
+    text-align: center;
+    max-width: 800px;
+    padding: 20px;
+}
+
+.avatar {
+    width: 350px;
+    max-width: 90%;
+    margin-bottom: 25px;
+    animation: float 2s ease-in-out infinite;
+}
+
+h1 {
+    font-size: 3rem;
+    margin-bottom: 15px;
+}
+
+.subtitle {
+    font-size: 1.2rem;
+    opacity: .8;
+    margin-bottom: 30px;
+}
+
+.loader {
+    width: 300px;
+    height: 10px;
+    background: rgba(255,255,255,.15);
+    border-radius: 20px;
+    overflow: hidden;
+    margin: auto;
+}
+
+.loader span {
+    display: block;
+    height: 100%;
+    background: linear-gradient(90deg,#ff7b00,#ffb700);
+    animation: load 5s linear forwards;
+}
+
+.countdown {
+    margin-top: 20px;
+    opacity: .7;
+}
+
+@keyframes load {
+    from { width:0%; }
+    to { width:100%; }
+}
+
+@keyframes float {
+    0%,100% { transform:translateY(0); }
+    50% { transform:translateY(-12px); }
+}
+</style>
 </head>
+
 <body>
-    <p>Redirecting to <a href="https://1drv.ms/f/c/8f428c27fc51325c/EkWLBuhu81xNggjNfYAVU2UB28QKI3JwqVLIb4inxW7c_w?e=xV3UiK">DHC Resources</a>...</p>
+
+<div class="container">
+
+    <!-- Replace this with your Naruto image -->
+    <img class="avatar"
+         src="naruto-wink.png"
+         alt="Naruto">
+
+    <h1>Redirecting to PRanxter's Space</h1>
+
+    <p class="subtitle">
+        Believe it! You'll be there in a few seconds...
+    </p>
+
+    <div class="loader">
+        <span></span>
+    </div>
+
+    <div class="countdown">
+        Redirecting in <span id="timer">5</span> seconds...
+    </div>
+
+</div>
+
+<script>
+let sec = 5;
+
+setInterval(() => {
+    sec--;
+    if(sec >= 0){
+        document.getElementById("timer").innerText = sec;
+    }
+},1000);
+
+setTimeout(() => {
+    window.location.href =
+    "https://1drv.ms/f/c/8f428c27fc51325c/EkWLBuhu81xNggjNfYAVU2UB28QKI3JwqVLIb4inxW7c_w?e=xV3UiK";
+},5000);
+</script>
+
 </body>
 </html>
